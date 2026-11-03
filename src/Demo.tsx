@@ -1,19 +1,58 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Cases } from "./Cases";
+import { downloadText, exportIlMarkdown } from "./exportReport";
 import {
   fullRangeIlBps,
   heatGrid,
+  heatRow,
   ilBar,
   SAMPLE_RATIOS,
 } from "./il";
 import { GLOSSARY, IL_MYTHS } from "./myths";
+import { decodeShareState, encodeShareState } from "./shareState";
+import { WORKED_EXAMPLES } from "./workedExamples";
+
+const LS_KEY = "pxj-il-heat-v1";
 
 export function Demo() {
   const [num, setNum] = useState("2");
   const [den, setDen] = useState("1");
   const [wNum, setWNum] = useState("2");
   const [wDen, setWDen] = useState("1");
+  const [shareMsg, setShareMsg] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromUrl = decodeShareState(window.location.search);
+    if (fromUrl.num || fromUrl.den) {
+      if (fromUrl.num) setNum(fromUrl.num);
+      if (fromUrl.den) setDen(fromUrl.den);
+      if (fromUrl.wNum) setWNum(fromUrl.wNum);
+      if (fromUrl.wDen) setWDen(fromUrl.wDen);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw) as Record<string, string>;
+      if (p.num) setNum(p.num);
+      if (p.den) setDen(p.den);
+      if (p.wNum) setWNum(p.wNum);
+      if (p.wDen) setWDen(p.wDen);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ num, den, wNum, wDen }));
+    } catch {
+      /* ignore */
+    }
+  }, [num, den, wNum, wDen]);
 
   const custom = useMemo(() => {
     try {
@@ -22,8 +61,9 @@ export function Demo() {
       const wn = BigInt(wNum.trim() || "0");
       const wd = BigInt(wDen.trim() || "0");
       const il = fullRangeIlBps(n, d);
+      const cell = heatRow(n, d, wn, wd);
       const grid = heatGrid(SAMPLE_RATIOS, wn, wd);
-      return { ok: true as const, il, bar: ilBar(n, d), grid, wn, wd };
+      return { ok: true as const, il, bar: ilBar(n, d), grid, cell };
     } catch (e) {
       return {
         ok: false as const,
@@ -31,6 +71,20 @@ export function Demo() {
       };
     }
   }, [num, den, wNum, wDen]);
+
+  const copyShare = async () => {
+    const qs = encodeShareState({ num, den, wNum, wDen });
+    const path =
+      typeof window !== "undefined"
+        ? `${window.location.origin}${window.location.pathname}?${qs}`
+        : `?${qs}`;
+    try {
+      await navigator.clipboard.writeText(path);
+      setShareMsg("Share URL copied");
+    } catch {
+      setShareMsg(path);
+    }
+  };
 
   return (
     <main className="wrap">
@@ -61,6 +115,21 @@ export function Demo() {
           </div>
         ))}
       </section>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
+        {SAMPLE_RATIOS.map(([n, d]) => (
+          <button
+            key={`${n}/${d}`}
+            type="button"
+            onClick={() => {
+              setNum(n.toString());
+              setDen(d.toString());
+            }}
+          >
+            {n.toString()}/{d.toString()}
+          </button>
+        ))}
+      </div>
 
       <label style={{ display: "block", marginBottom: "0.5rem" }}>
         Ratio numerator
@@ -98,10 +167,39 @@ export function Demo() {
       {custom.ok ? (
         <>
           <p>
-            IL <strong>{custom.il.toString()}</strong> bps
+            IL <strong>{custom.il.toString()}</strong> bps · this ratio inside band:{" "}
+            <strong>{custom.cell.inside ? "yes" : "no"}</strong>
           </p>
           <p style={{ fontFamily: "ui-monospace, monospace" }}>{custom.bar}</p>
-          <h2 style={{ fontSize: "1rem" }}>Sample heat row</h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={() =>
+                downloadText(
+                  "il-heat.md",
+                  exportIlMarkdown({
+                    ratio: `${num}/${den}`,
+                    ilBps: custom.il.toString(),
+                    width: `${wNum}/${wDen}`,
+                    grid: custom.grid.map((c) => ({
+                      ratio: c.ratio,
+                      ilBps: c.ilBps.toString(),
+                      inside: String(c.inside),
+                    })),
+                  })
+                )
+              }
+            >
+              Download MD
+            </button>
+            <button type="button" onClick={() => void copyShare()}>
+              Copy share URL
+            </button>
+          </div>
+          {shareMsg && (
+            <p style={{ fontSize: "0.85rem", opacity: 0.8 }}>{shareMsg}</p>
+          )}
+          <h2 style={{ fontSize: "1rem", marginTop: "1.5rem" }}>Sample heat row</h2>
           <table>
             <thead>
               <tr>
@@ -125,13 +223,28 @@ export function Demo() {
         <p>{custom.reason}</p>
       )}
 
-      <section style={{ marginTop: "2rem" }}>
+      <section style={{ marginTop: "1.5rem" }}>
+        <h2 style={{ fontSize: "1rem" }}>Worked anchors</h2>
+        <ul style={{ fontSize: "0.9rem" }}>
+          {WORKED_EXAMPLES.map((w) => (
+            <li key={w.ratio}>
+              {w.ratio}
+              {"ilBps" in w ? ` → ${w.ilBps} bps` : ""}
+              {"note" in w ? ` (${w.note})` : ""}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <Cases />
+
+      <section style={{ marginTop: "1.5rem" }}>
         <h2 style={{ fontSize: "1rem" }}>Runbook</h2>
         <ol style={{ fontSize: "0.9rem" }}>
-          <li>Enter a positive price ratio (num/den).</li>
-          <li>Read full-range IL bps and meter.</li>
-          <li>Set a teaching width; inspect which sample ratios sit inside.</li>
-          <li>Do not treat this as concentrated-liquidity or live Alcor IL.</li>
+          <li>Pick a sample ratio or enter num/den.</li>
+          <li>Read full-range IL bps and meter; check band membership.</li>
+          <li>Adjust teaching width; scan the sample grid.</li>
+          <li>Export / share — still not CL or live Alcor.</li>
         </ol>
       </section>
 
@@ -150,8 +263,7 @@ export function Demo() {
       </section>
 
       <p style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.75 }}>
-        See EDUCATION.md · POLICY.md · SECURITY.md · companions: fee-lifecycle, migration
-        tracker, LP profiler
+        URL overrides localStorage when present. See EDUCATION.md · SECURITY.md
       </p>
     </main>
   );
