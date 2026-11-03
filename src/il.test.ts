@@ -9,11 +9,13 @@ import {
   ilSymmetric,
   insideSymmetric,
   isqrt,
+  SAMPLE_RATIOS,
 } from "./il";
 
 describe("isqrt", () => {
   it("roots small squares", () => {
     expect(isqrt(0n)).toBe(0n);
+    expect(isqrt(1n)).toBe(1n);
     expect(isqrt(4n)).toBe(2n);
     expect(isqrt(9n)).toBe(3n);
   });
@@ -31,6 +33,12 @@ describe("full-range IL", () => {
     expect(fullRangeIlBps(4n, 1n)).toBe(fullRangeIlBps(1n, 4n));
   });
 
+  it("never positive for sample ratios", () => {
+    for (const [n, d] of SAMPLE_RATIOS) {
+      expect(fullRangeIlBps(n, d) <= 0n).toBe(true);
+    }
+  });
+
   it("marks 4x outside a 2x band", () => {
     expect(insideSymmetric(2n, 1n, 2n, 1n)).toBe(true);
     expect(insideSymmetric(4n, 1n, 2n, 1n)).toBe(false);
@@ -38,15 +46,14 @@ describe("full-range IL", () => {
   });
 
   it("builds a heat grid", () => {
-    const g = heatGrid(
-      [
-        [1n, 1n],
-        [2n, 1n],
-      ],
-      2n,
-      1n
-    );
-    expect(g[0].ilBps).toBe(0n);
+    const g = heatGrid(SAMPLE_RATIOS, 2n, 1n);
+    expect(g.length).toBe(SAMPLE_RATIOS.length);
+    expect(g.find((c) => c.ratio === "1/1")?.ilBps).toBe(0n);
+  });
+
+  it("rejects non-positive ratios", () => {
+    expect(() => fullRangeIlBps(0n, 1n)).toThrow();
+    expect(() => fullRangeIlBps(1n, 0n)).toThrow();
   });
 });
 
@@ -68,5 +75,8 @@ describe("feesCoverIl", () => {
     const r = feesCoverIl(4n, 1n, 1000n);
     expect(r.ok && r.covered).toBe(false);
     expect(r.ok && r.gap).toBe(1000n);
+  });
+  it("rejects negative fee", () => {
+    expect(feesCoverIl(1n, 1n, -1n).ok).toBe(false);
   });
 });

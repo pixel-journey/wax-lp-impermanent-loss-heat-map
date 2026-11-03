@@ -18,6 +18,10 @@ const CASES = [
     body: "width 2 keeps 2× inside and marks 4× outside — not CL ticks.",
   },
   {
+    title: "Fee sketch",
+    body: "feesCoverIl compares a flat fee-income bps number to |IL| — not APR.",
+  },
+  {
     title: "Not Alcor",
     body: "No pool is read; ratios are arguments.",
   },
