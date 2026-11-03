@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Cases } from "./Cases";
-import { downloadText, exportIlMarkdown } from "./exportReport";
 import {
+  downloadText,
+  exportIlCsv,
+  exportIlMarkdown,
+} from "./exportReport";
+import {
+  compareIl,
+  feesCoverIl,
   fullRangeIlBps,
   heatGrid,
   heatRow,
@@ -22,6 +28,10 @@ export function Demo() {
   const [wNum, setWNum] = useState("2");
   const [wDen, setWDen] = useState("1");
   const [shareMsg, setShareMsg] = useState("");
+  const [feeBps, setFeeBps] = useState("500");
+  const [compare, setCompare] = useState(false);
+  const [numB, setNumB] = useState("4");
+  const [denB, setDenB] = useState("1");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -63,14 +73,27 @@ export function Demo() {
       const il = fullRangeIlBps(n, d);
       const cell = heatRow(n, d, wn, wd);
       const grid = heatGrid(SAMPLE_RATIOS, wn, wd);
-      return { ok: true as const, il, bar: ilBar(n, d), grid, cell };
+      const fees = feesCoverIl(n, d, BigInt(feeBps.trim() || "0"));
+      return { ok: true as const, il, bar: ilBar(n, d), grid, cell, fees, n, d };
     } catch (e) {
       return {
         ok: false as const,
         reason: e instanceof Error ? e.message : "Invalid inputs",
       };
     }
-  }, [num, den, wNum, wDen]);
+  }, [num, den, wNum, wDen, feeBps]);
+
+  const cmp = useMemo(() => {
+    if (!compare) return null;
+    try {
+      return compareIl(
+        { num: BigInt(num.trim() || "0"), den: BigInt(den.trim() || "0") },
+        { num: BigInt(numB.trim() || "0"), den: BigInt(denB.trim() || "0") }
+      );
+    } catch {
+      return null;
+    }
+  }, [compare, num, den, numB, denB]);
 
   const copyShare = async () => {
     const qs = encodeShareState({ num, den, wNum, wDen });
@@ -88,6 +111,7 @@ export function Demo() {
 
   return (
     <main className="wrap">
+      <style>{`@media print { button, .no-print { display: none !important; } }`}</style>
       <p className="kicker">Educational reference · Pixel Journey</p>
       <h1>Full-range IL heat lab</h1>
       <p className="lede">
@@ -96,6 +120,7 @@ export function Demo() {
       </p>
 
       <section
+        className="no-print"
         style={{
           marginBottom: "1.5rem",
           padding: "1rem",
@@ -116,7 +141,7 @@ export function Demo() {
         ))}
       </section>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
         {SAMPLE_RATIOS.map(([n, d]) => (
           <button
             key={`${n}/${d}`}
@@ -171,7 +196,25 @@ export function Demo() {
             <strong>{custom.cell.inside ? "yes" : "no"}</strong>
           </p>
           <p style={{ fontFamily: "ui-monospace, monospace" }}>{custom.bar}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+
+          <label style={{ display: "block", margin: "1rem 0 0.5rem" }}>
+            Flat fee-income bps (sketch only)
+            <input
+              value={feeBps}
+              onChange={(e) => setFeeBps(e.target.value)}
+              style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+            />
+          </label>
+          {custom.fees.ok && (
+            <p style={{ fontSize: "0.9rem" }}>
+              |IL| {custom.fees.ilMag.toString()} bps ·{" "}
+              {custom.fees.covered
+                ? "fees cover magnitude (sketch)"
+                : `gap ${custom.fees.gap.toString()} bps`}
+            </p>
+          )}
+
+          <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
             <button
               type="button"
               onClick={() =>
@@ -192,12 +235,35 @@ export function Demo() {
             >
               Download MD
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                downloadText(
+                  "il-heat.csv",
+                  exportIlCsv(
+                    custom.grid.map((c) => ({
+                      ratio: c.ratio,
+                      ilBps: c.ilBps.toString(),
+                      inside: String(c.inside),
+                    }))
+                  ),
+                  "text/csv;charset=utf-8"
+                )
+              }
+            >
+              Download CSV
+            </button>
             <button type="button" onClick={() => void copyShare()}>
               Copy share URL
             </button>
+            <button type="button" onClick={() => window.print()}>
+              Print
+            </button>
           </div>
           {shareMsg && (
-            <p style={{ fontSize: "0.85rem", opacity: 0.8 }}>{shareMsg}</p>
+            <p className="no-print" style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+              {shareMsg}
+            </p>
           )}
           <h2 style={{ fontSize: "1rem", marginTop: "1.5rem" }}>Sample heat row</h2>
           <table>
@@ -223,6 +289,40 @@ export function Demo() {
         <p>{custom.reason}</p>
       )}
 
+      <label className="no-print" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "1.5rem" }}>
+        <input
+          type="checkbox"
+          checked={compare}
+          onChange={(e) => setCompare(e.target.checked)}
+        />
+        Compare against a second ratio
+      </label>
+      {compare && (
+        <div style={{ marginBottom: "1rem" }}>
+          <label style={{ display: "block", marginBottom: "0.5rem" }}>
+            B numerator
+            <input
+              value={numB}
+              onChange={(e) => setNumB(e.target.value)}
+              style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+            />
+          </label>
+          <label style={{ display: "block" }}>
+            B denominator
+            <input
+              value={denB}
+              onChange={(e) => setDenB(e.target.value)}
+              style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+            />
+          </label>
+        </div>
+      )}
+      {cmp && (
+        <p style={{ fontSize: "0.9rem" }}>
+          A {cmp.aBps.toString()} · B {cmp.bBps.toString()} · Δ {cmp.deltaBps.toString()} bps
+        </p>
+      )}
+
       <section style={{ marginTop: "1.5rem" }}>
         <h2 style={{ fontSize: "1rem" }}>Worked anchors</h2>
         <ul style={{ fontSize: "0.9rem" }}>
@@ -236,15 +336,17 @@ export function Demo() {
         </ul>
       </section>
 
-      <Cases />
+      <div className="no-print">
+        <Cases />
+      </div>
 
       <section style={{ marginTop: "1.5rem" }}>
         <h2 style={{ fontSize: "1rem" }}>Runbook</h2>
         <ol style={{ fontSize: "0.9rem" }}>
           <li>Pick a sample ratio or enter num/den.</li>
           <li>Read full-range IL bps and meter; check band membership.</li>
-          <li>Adjust teaching width; scan the sample grid.</li>
-          <li>Export / share — still not CL or live Alcor.</li>
+          <li>Optional: flat fee-income sketch, compare ratios, export, print, share.</li>
+          <li>Do not treat fee sketch as APR or this lab as CL / live Alcor.</li>
         </ol>
       </section>
 
@@ -262,8 +364,8 @@ export function Demo() {
         </dl>
       </section>
 
-      <p style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.75 }}>
-        URL overrides localStorage when present. See EDUCATION.md · SECURITY.md
+      <p className="no-print" style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.75 }}>
+        URL overrides localStorage when present. See EDUCATION.md · POLICY.md · SECURITY.md
       </p>
     </main>
   );

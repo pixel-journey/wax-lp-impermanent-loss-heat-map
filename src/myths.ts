@@ -17,6 +17,11 @@ export const IL_MYTHS = [
     myth: "A heat map cell is live market data",
     reality: "Ratios are arguments. No pool is read.",
   },
+  {
+    myth: "Fee-income bps here is live APR",
+    reality:
+      "feesCoverIl is a flat educational sketch against |IL|, not an APR model.",
+  },
 ] as const;
 
 export const GLOSSARY = [
@@ -29,7 +34,11 @@ export const GLOSSARY = [
     meaning: "Whether r sits in [1/width, width] around entry.",
   },
   {
-    term: "heatRow",
-    meaning: "One ratio → ilBps + inside flag for a chosen width.",
+    term: "feesCoverIl",
+    meaning: "Whether a flat fee-income bps number covers |IL| (sketch).",
+  },
+  {
+    term: "compareIl",
+    meaning: "Delta of IL bps between two ratios.",
   },
 ] as const;

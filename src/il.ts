@@ -25,16 +25,11 @@ export function fullRangeIlBps(num: bigint, den: bigint): bigint {
   return (2n * isqrt(num * den) * 10_000n) / (num + den) - 10_000n;
 }
 
-/** Absolute magnitude of IL as a positive bigint (for meters). */
 export function ilMagnitudeBps(num: bigint, den: bigint): bigint {
   const v = fullRangeIlBps(num, den);
   return v < 0n ? -v : v;
 }
 
-/**
- * Range is [1/width, width] around the entry price.
- * width = widthNum/widthDen and must be ≥ 1.
- */
 export function insideSymmetric(
   ratioNum: bigint,
   ratioDen: bigint,
@@ -73,9 +68,33 @@ export function heatGrid(
   return ratios.map(([n, d]) => heatRow(n, d, widthNum, widthDen));
 }
 
-/** Symmetric inverse ratio (a/b → b/a) should share the same IL magnitude. */
 export function ilSymmetric(num: bigint, den: bigint): boolean {
   return fullRangeIlBps(num, den) === fullRangeIlBps(den, num);
+}
+
+export function compareIl(
+  a: { num: bigint; den: bigint },
+  b: { num: bigint; den: bigint }
+): { aBps: bigint; bBps: bigint; deltaBps: bigint } {
+  const aBps = fullRangeIlBps(a.num, a.den);
+  const bBps = fullRangeIlBps(b.num, b.den);
+  return { aBps, bBps, deltaBps: aBps - bBps };
+}
+
+/**
+ * Educational sketch only: whether fee income in bps would cover |IL|
+ * if fees were credited as a single flat number (not a live fee APR model).
+ */
+export function feesCoverIl(
+  num: bigint,
+  den: bigint,
+  feeIncomeBps: bigint
+): { ok: false; reason: string } | { ok: true; ilMag: bigint; covered: boolean; gap: bigint } {
+  if (feeIncomeBps < 0n) return { ok: false, reason: "feeIncomeBps must be non-negative" };
+  const ilMag = ilMagnitudeBps(num, den);
+  const covered = feeIncomeBps >= ilMag;
+  const gap = covered ? 0n : ilMag - feeIncomeBps;
+  return { ok: true, ilMag, covered, gap };
 }
 
 export const SAMPLE_RATIOS: [bigint, bigint][] = [
@@ -86,7 +105,6 @@ export const SAMPLE_RATIOS: [bigint, bigint][] = [
   [4n, 1n],
 ];
 
-/** ASCII bar for |IL| bps (0–10 blocks, 1000 bps per block). */
 export function ilBar(num: bigint, den: bigint): string {
   const mag = ilMagnitudeBps(num, den);
   const filled = Number(mag / 1_000n);
