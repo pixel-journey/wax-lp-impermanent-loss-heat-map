@@ -1,7 +1,7 @@
 # wax-lp-impermanent-loss-heat-map
 
 > **Trust label:** `educational-reference`  
-> **Status:** Pure rules + education pass (2026-10-31)
+> **Status:** Full-thrust education pass (2026-11-03)
 
 **Full-range IL** at a price ratio + whether the ratio sits in a symmetric band. Not concentrated liquidity. Not Alcor.
 
@@ -9,6 +9,13 @@
 npm test && npm run dev
 ```
 
-[POLICY.md](./POLICY.md)
+| Helper | Role |
+|--------|------|
+| `fullRangeIlBps` | classic full-range IL in bps |
+| `insideSymmetric` | teaching band [1/w, w] |
+| `heatRow` / `heatGrid` | sample cells |
+| `ilBar` | ASCII magnitude |
+
+[EDUCATION.md](./EDUCATION.md) · [POLICY.md](./POLICY.md) · [SECURITY.md](./SECURITY.md)
 
 MIT — Pixel Journey

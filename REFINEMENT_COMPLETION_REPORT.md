@@ -1,12 +1,14 @@
-# Full-range IL heat row
+# Full-thrust — IL heat lab
 
-**Updated:** 2026-10-31
+**Updated:** 2026-11-03
 
-| Scope | Notes |
+| Area | Notes |
 |------|-------|
-| Core | fullRangeIlBps · insideSymmetric |
-| Education | myths, POLICY, interactive demo |
+| Engine | magnitude, heatGrid, symmetry, bar |
+| Tests | anchors + grid |
+| Docs | EDUCATION, ARCHITECTURE, POLICY, SECURITY |
+| UI | interactive ratio/width + sample table |
 
 ```bash
-npm test
+npm test && npm run dev
 ```

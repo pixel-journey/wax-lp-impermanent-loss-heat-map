@@ -1,9 +1,10 @@
 # Verification Log
 
-**Updated:** 2026-10-31
+**Updated:** 2026-11-03
 
 | Claim | Status |
 | --- | --- |
-| IL / range rules | unit |
-| Live Alcor depth | out of scope |
-| Concentrated IL | out of scope |
+| isqrt / fullRangeIlBps anchors | unit |
+| inverse symmetry | unit |
+| insideSymmetric / heatGrid | unit |
+| Live Alcor / CL | out of scope |

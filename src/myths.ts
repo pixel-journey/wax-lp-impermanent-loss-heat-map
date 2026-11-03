@@ -1,17 +1,35 @@
 export const IL_MYTHS = [
   {
-    myth: "This is concentrated-liquidity IL for Alcor ranges",
+    myth: "This is concentrated-liquidity or Alcor pool IL",
     reality:
-      "fullRangeIlBps is the classic constant-product full-range formula only.",
+      "Full-range formula only. Width is a teaching band, not a Uniswap-v3 tick range.",
   },
   {
-    myth: "This page reads live Alcor depth",
+    myth: "IL is always a realized loss",
     reality:
-      "Demo is offline. Unsent request shapes exist; executed is false.",
+      "Classic IL compares LP value to holding; fees and exits are out of scope here.",
   },
   {
-    myth: "Inside the 2x band means zero IL",
-    reality:
-      "Inside only means the ratio sits in [1/width, width]. Full-range IL can still be non-zero.",
+    myth: "4x and 1/4x differ in magnitude",
+    reality: "fullRangeIlBps is symmetric under ratio inversion.",
+  },
+  {
+    myth: "A heat map cell is live market data",
+    reality: "Ratios are arguments. No pool is read.",
+  },
+] as const;
+
+export const GLOSSARY = [
+  {
+    term: "fullRangeIlBps",
+    meaning: "(2√r/(1+r) − 1) in bps for r = num/den, integer sqrt.",
+  },
+  {
+    term: "insideSymmetric",
+    meaning: "Whether r sits in [1/width, width] around entry.",
+  },
+  {
+    term: "heatRow",
+    meaning: "One ratio → ilBps + inside flag for a chosen width.",
   },
 ] as const;

@@ -1,19 +1,15 @@
-# Policy — full-range IL heat row
+# Policy — IL heat lab
 
 **Trust label:** `educational-reference`  
-**Updated:** 2026-10-31
+**Updated:** 2026-11-03
 
 ## In scope
 
-- Pure `fullRangeIlBps`, `insideSymmetric`, `heatRow`
-- Offline sample ratios
+- Pure full-range IL bps + symmetric band helpers
+- Offline demo and unit tests
 
 ## Out of scope
 
-- Concentrated liquidity math
-- Live Alcor position / depth product
-- Fee offset of IL
-
-## Companion
-
-`wax-lp-behavioral-profiler` · `wax-lp-fee-lifecycle-auditor`
+- Concentrated liquidity / tick math
+- Live Alcor or any AMM product
+- Fee-inclusive PnL
