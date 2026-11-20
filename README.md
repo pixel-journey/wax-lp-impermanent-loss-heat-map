@@ -55,6 +55,6 @@ npm run dev
 
 - [wax-lp-fee-lifecycle-auditor](https://github.com/pixel-journey/wax-lp-fee-lifecycle-auditor)
 - [wax-alcor-pool-migration-tracker](https://github.com/pixel-journey/wax-alcor-pool-migration-tracker)
-- The formula is constant-product full-range IL: `2 * sqrt(r) / (1 + r) - 1`, in integer bps. The same line minus a typed fee is [wax-concentrated-liquidity-roi-matrix](https://github.com/pixel-journey/wax-concentrated-liquidity-roi-matrix). A band around an entry, which is not this loss, is [wax-alcor-v2-range-optimizer](https://github.com/pixel-journey/wax-alcor-v2-range-optimizer). It is not an Alcor v2 range. Alcor's own code: [alcor-exchange](https://github.com/alcor-exchange). `wax-market-cap-bubble` is still private.
+- The formula is constant-product full-range IL: `2 * sqrt(r) / (1 + r) - 1`, in integer bps. The same line minus a typed fee is [wax-concentrated-liquidity-roi-matrix](https://github.com/pixel-journey/wax-concentrated-liquidity-roi-matrix). A float sketch of the same 4x case, plus a paper insurance policy, is [wax-impermanent-loss-insurance-pool-tracker](https://github.com/pixel-journey/wax-impermanent-loss-insurance-pool-tracker). They agree at 1x and at 4x. They are not the same function. A band around an entry, which is not this loss, is [wax-alcor-v2-range-optimizer](https://github.com/pixel-journey/wax-alcor-v2-range-optimizer). It is not an Alcor v2 range. Alcor's own code: [alcor-exchange](https://github.com/alcor-exchange). `wax-market-cap-bubble` is still private.
 
 MIT — Pixel Journey
