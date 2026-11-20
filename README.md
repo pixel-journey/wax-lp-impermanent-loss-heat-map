@@ -1,7 +1,7 @@
 # Full-range IL for a price ratio — not a live heat map
 
 > **Trust:** `educational-reference`  
-> **Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)
+> **Catalog:** `wax-ecosystem-blueprint-catalog` (private index; not this public course)
 
 **One-sentence goal:** Teach full-range impermanent loss in basis points, a symmetric band check, and a flat fee-cover compare — without reading an Alcor pool or modeling concentrated liquidity.
 
@@ -53,8 +53,8 @@ npm run dev
 
 ## Related
 
-- `wax-lp-fee-lifecycle-auditor`
-- `wax-alcor-pool-migration-tracker`
-- `wax-market-cap-bubble`
+- [wax-lp-fee-lifecycle-auditor](https://github.com/pixel-journey/wax-lp-fee-lifecycle-auditor)
+- [wax-alcor-pool-migration-tracker](https://github.com/pixel-journey/wax-alcor-pool-migration-tracker)
+- The formula is constant-product full-range IL: `2 * sqrt(r) / (1 + r) - 1`, in integer bps. It is not an Alcor v2 range. Alcor's own code: [alcor-exchange](https://github.com/alcor-exchange). `wax-market-cap-bubble` is still private.
 
 MIT — Pixel Journey
