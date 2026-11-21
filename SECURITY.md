@@ -1,21 +1,40 @@
-# Security notes
+# Security — full-range impermanent loss (teaching arithmetic)
 
-**Trust label:** `educational-reference`
+## Closed in tests
 
-## What this package does not do
+| Issue | Behavior |
+| --- | --- |
+| Ratio 1/1 | **0** bps |
+| Ratio 4/1 (and 1/4) | **−2000** bps (symmetric) |
+| Non-positive ratios | throw |
+| 4x outside a 2x band | `insideSymmetric` false |
+| `feesCoverIl(4x, 1000)` | not covered, gap 1000 |
+| `feesCoverIl(4x, 2000)` | covered |
 
-- No private keys, wallets, or signing
-- No Alcor / Hyperion calls on the measure path
-- No concentrated-liquidity tick simulation
-- No claim that educational IL bps equals account equity
+## Not closed (production)
 
-## Host-product guidance
+| Concern | Guidance |
+| --- | --- |
+| Pool state | Never reads Alcor / Hyperion |
+| Concentrated liquidity | Full-range formula only — not tick ranges |
+| Fee APR | Flat bps compare, not volume over time |
+| Equity claim | Educational IL ≠ withdrawal amount |
 
-- Treat `fullRangeIlBps` and `feesCoverIl` as **teaching arithmetic**, not withdrawal or APR authorization.
-- Share URLs only encode ratio/width demo numbers — not session tokens.
-- localStorage holds last ratio/width on the same origin; clear on shared devices.
-- Prefer **WharfKit** if a future host adds intentional chain actions.
+## Attack angles
 
-## Supply-chain
+1. Pasting −2000 bps onto a **narrow range** position (concentrated IL is worse).  
+2. Treating `feesCoverIl` as proof the pool earned that APR.  
+3. Claiming a live Alcor heat map was generated when only pure math ran.  
+4. Using classic "50% at 4x" folklore instead of the `2√r/(1+r)−1` form.  
+5. Authorizing withdrawals from educational IL numbers.
 
-Correctness is locked by pure unit tests (anchors, symmetry, band, fee sketch). Pin dependencies for any public deploy.
+## Honesty limits
+
+No network. No wasm. No position NFT.
+
+| Sibling | Distinction |
+| --- | --- |
+| [Alcor range backtester](https://github.com/pixel-journey/wax-alcor-v2-range-efficiency-backtester) | Fee product floor, not IL |
+| [DeFi health](https://github.com/pixel-journey/wax-defi-protocol-health-dashboard) | Tags on TVL/volume/LPs |
+
+[docs.wax.io](https://docs.wax.io/). Prefer WharfKit if a host later adds intentional chain actions.
