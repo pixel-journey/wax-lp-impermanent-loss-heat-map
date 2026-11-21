@@ -11,6 +11,8 @@
 | `feesCoverIl(4x, 1000)` | not covered, gap 1000 |
 | `feesCoverIl(4x, 2000)` | covered |
 
+Formula: `2√r/(1+r) − 1` in integer bps form.
+
 ## Not closed (production)
 
 | Concern | Guidance |
@@ -34,7 +36,9 @@ No network. No wasm. No position NFT.
 
 | Sibling | Distinction |
 | --- | --- |
-| [Alcor range backtester](https://github.com/pixel-journey/wax-alcor-v2-range-efficiency-backtester) | Fee product floor, not IL |
-| [DeFi health](https://github.com/pixel-journey/wax-defi-protocol-health-dashboard) | Tags on TVL/volume/LPs |
+| [concentrated ROI](https://github.com/pixel-journey/wax-concentrated-liquidity-roi-matrix) | Fee minus this IL |
+| [range optimizer](https://github.com/pixel-journey/wax-alcor-v2-range-optimizer) | Band width fraction |
+| [rebalance advisor](https://github.com/pixel-journey/wax-lp-predictive-rebalance-advisor) | below/inside/above label |
+| [range backtester](https://github.com/pixel-journey/wax-alcor-v2-range-efficiency-backtester) | Fee product floor |
 
 [docs.wax.io](https://docs.wax.io/). Prefer WharfKit if a host later adds intentional chain actions.
